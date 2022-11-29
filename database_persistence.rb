@@ -7,7 +7,8 @@ class DatabasePersistence
     @logger = logger
   end
 
-  def query(statement, *params) # since it's a splat in the paramter, it's already an array -- even with one param
+  # since it's a splat in the param, it's already an array -- even with one param
+  def query(statement, *params)
     @logger.info "#{statement}: #{params}"
     @db.exec_params(statement, params)
   end
@@ -23,6 +24,19 @@ class DatabasePersistence
     {id: list_id, name: tuple["name"], todos: todos}
   end
 
+  # all_lists explination
+  
+    # [{id:, name:, todos:}] # we want to keep the same format using sql that we had with sessions, 
+    # which was this
+    
+    # example of manipulating the data:
+    # new_val = result.map do |tuple|
+    #   {id: tuple["id"], name: tuple["name"], todos: []}
+    # end
+
+    # starting value - [["1", "Homework"], ["2", "Music"]]
+    # after using map [{:id=>"1", :name=>"Homework", :todos=>[]}, {:id=>"2", :name=>"Music", :todos=>[]}]   
+
   def all_lists 
     sql = "SELECT * FROM lists"
     result = query(sql)
@@ -34,19 +48,6 @@ class DatabasePersistence
     end
   end
 
-  # all_lists explination
-  
-  # [{id:, name:, todos:}] # we want to keep the same format using sql that we had with sessions, which was this
-  #example: 
-      # new_val = result.map do |tuple|
-      #   {id: tuple["id"], name: tuple["name"], todos: []}
-      # end
-  
-      # p new_val
-
-      # starting value - [["1", "Homework"], ["2", "Music"]]
-      # after using map [{:id=>"1", :name=>"Homework", :todos=>[]}, {:id=>"2", :name=>"Music", :todos=>[]}]   
- 
   def create_new_list(list_name)
     sql = "INSERT INTO lists (name) VALUES ($1)"
     query(sql, list_name)
@@ -56,6 +57,7 @@ class DatabasePersistence
     sql = "DELETE FROM lists WHERE id = $1"
     query(sql, id)
 
+    # postgres database table lists has an ON DELETE CASCADE clause, so this is not necessary
     # query("DELETE FROM todos WHERE list_id = $1", id)
   end
 
